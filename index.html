@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Productividad - Recibo</title>
+    <!-- Tailwind CSS para el diseño responsive -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Iconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb', // blue-600
+                        secondary: '#1e40af', // blue-800
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Estilos adicionales para ocultar las flechas del input numérico */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4 font-sans">
+
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 sm:p-8">
+        <div class="text-center mb-6">
+            <div class="bg-primary text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 shadow-md">
+                <i class="fa-solid fa-clipboard-check text-3xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800">Registro de Recibo</h1>
+            <p class="text-sm text-gray-500 mt-1">Captura de productividad</p>
+        </div>
+
+        <!-- Área de visualización de datos automáticos -->
+        <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-6 grid grid-cols-2 gap-2 text-sm">
+            <div class="text-gray-600">
+                <i class="fa-regular fa-calendar mr-1"></i> <span id="display-fecha">--/--/----</span>
+            </div>
+            <div class="text-gray-600 text-right">
+                <i class="fa-regular fa-clock mr-1"></i> <span id="display-hora">--:--</span>
+            </div>
+            <div class="text-gray-600 col-span-2 text-center mt-1 font-semibold text-primary">
+                Semana del año: <span id="display-semana">--</span>
+            </div>
+        </div>
+
+        <!-- FORMULARIO -->
+        <form id="registroForm" class="space-y-4">
+            
+            <!-- ¡IMPORTANTE! REEMPLAZA LA URL DE ABAJO -->
+            <!-- Aquí pondrás la URL del Web App de Google Apps Script que crearás -->
+            <input type="hidden" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbyN9_wLD45QEyEqA9Zu17cfFO4Lgla4vJYg9KGCVsgWXK8gWMpPvOXwb2sHj5NEClcz4A/exec">
+
+            <!-- Campos Automáticos Ocultos que se enviarán al sheet -->
+            <input type="hidden" id="fecha" name="fecha">
+            <input type="hidden" id="hora" name="hora">
+            <input type="hidden" id="semana" name="semana">
+
+            <!-- Área -->
+            <div>
+                <label for="area" class="block text-sm font-medium text-gray-700 mb-1">Área</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-map-location-dot text-gray-400"></i>
+                    </div>
+                    <select id="area" name="area" required
+                        class="pl-10 w-full rounded-md border border-gray-300 bg-white py-2 px-3 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary appearance-none">
+                        <option value="" disabled selected>Selecciona un área...</option>
+                        <option value="M. GRAL.">M. GRAL.</option>
+                        <option value="ALIMENTO">ALIMENTO</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
+                        <i class="fa-solid fa-chevron-down text-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Camión -->
+            <div>
+                <label for="camion" class="block text-sm font-medium text-gray-700 mb-1">Camión (Placa / ID)</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-truck text-gray-400"></i>
+                    </div>
+                    <input type="text" id="camion" name="camion" required placeholder="Ej. TRK-405" uppercase
+                        class="pl-10 w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary uppercase">
+                </div>
+            </div>
+
+            <!-- Piezas -->
+            <div>
+                <label for="piezas" class="block text-sm font-medium text-gray-700 mb-1">Piezas Recibidas</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-boxes-stacked text-gray-400"></i>
+                    </div>
+                    <input type="number" id="piezas" name="piezas" required min="1" placeholder="Ej. 150"
+                        class="pl-10 w-full rounded-md border border-gray-300 py-2 px-3 shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
+                </div>
+            </div>
+
+            <!-- Botón Guardar -->
+            <div class="pt-2">
+                <button type="submit" id="btnSubmit"
+                    class="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors">
+                    <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Guardar Registro
+                </button>
+            </div>
+        </form>
+
+        <!-- Mensajes de estado -->
+        <div id="mensaje" class="mt-4 text-center text-sm hidden p-2 rounded-md font-medium"></div>
+    </div>
+
+    <script>
+        // Función para calcular la semana del año empezando en domingo
+        function obtenerSemanaDelAno(fecha) {
+            const start = new Date(fecha.getFullYear(), 0, 1);
+            const days = Math.floor((fecha - start) / (24 * 60 * 60 * 1000));
+            // getDay() devuelve 0 para domingo, 1 para lunes, etc.
+            const semana = Math.ceil((days + start.getDay() + 1) / 7);
+            return semana;
+        }
+
+        // Función para formatear dos dígitos
+        function dosDigitos(num) {
+            return num.toString().padStart(2, '0');
+        }
+
+        // Actualizar datos automáticos en pantalla
+        function actualizarDatosTemporales() {
+            const ahora = new Date();
+            
+            const dia = dosDigitos(ahora.getDate());
+            const mes = dosDigitos(ahora.getMonth() + 1);
+            const anio = ahora.getFullYear();
+            const fechaString = `${dia}/${mes}/${anio}`;
+            
+            const horas = dosDigitos(ahora.getHours());
+            const minutos = dosDigitos(ahora.getMinutes());
+            const horaString = `${horas}:${minutos}`;
+            
+            const semana = obtenerSemanaDelAno(ahora);
+
+            document.getElementById('display-fecha').textContent = fechaString;
+            document.getElementById('display-hora').textContent = horaString;
+            document.getElementById('display-semana').textContent = semana;
+
+            return { fechaString, horaString, semana };
+        }
+
+        // Iniciar actualización en tiempo real visualmente
+        setInterval(actualizarDatosTemporales, 60000); // Actualiza cada minuto
+        actualizarDatosTemporales(); // Llama a la función al cargar
+
+        // Convertir el input del camión a mayúsculas automáticamente
+        document.getElementById('camion').addEventListener('input', function(e) {
+            this.value = this.value.toUpperCase();
+        });
+
+        // Manejo del formulario
+        const form = document.getElementById('registroForm');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const mensaje = document.getElementById('mensaje');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // 1. Obtener la URL del script
+        const scriptUrl = document.getElementById('scriptUrl').value;
+        
+        if (scriptUrl.trim() === "") {
+            mostrarMensaje('Error: Falta configurar la URL de Google Apps Script en el código fuente.', 'error');
+            return;
+        }
+
+        // 2. Justo antes de enviar, capturamos el tiempo exacto
+            const tiempoExacto = actualizarDatosTemporales();
+            document.getElementById('fecha').value = tiempoExacto.fechaString;
+            document.getElementById('hora').value = tiempoExacto.horaString;
+            document.getElementById('semana').value = tiempoExacto.semana;
+
+            // 3. Estado de carga
+            const btnTextOriginal = btnSubmit.innerHTML;
+            btnSubmit.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Guardando...';
+            btnSubmit.disabled = true;
+            btnSubmit.classList.add('opacity-75', 'cursor-not-allowed');
+            ocultarMensaje();
+
+            // 4. Preparar datos para enviar (Formato robusto para Google)
+            const formData = new FormData(form);
+            const data = new URLSearchParams(formData);
+
+            // 5. Enviar usando Fetch
+            fetch(scriptUrl, {
+                method: 'POST',
+                body: data,
+                mode: 'no-cors' // Crucial para evitar errores de CORS con Google Apps Script
+            })
+            .then(() => {
+                // Al usar 'no-cors', fetch no puede leer la respuesta de Google, 
+                // así que asumimos éxito si no lanza un error de red.
+                mostrarMensaje('¡Registro guardado con éxito!', 'success');
+                form.reset(); // Limpiar el formulario
+                actualizarDatosTemporales(); // Restablecer la fecha/hora visual
+            })
+            .catch(error => {
+                console.error('Error!', error.message);
+                mostrarMensaje('Error al guardar. Verifica tu conexión.', 'error');
+            })
+            .finally(() => {
+                // Restaurar botón
+                btnSubmit.innerHTML = btnTextOriginal;
+                btnSubmit.disabled = false;
+                btnSubmit.classList.remove('opacity-75', 'cursor-not-allowed');
+                
+                // Ocultar mensaje de éxito después de 4 segundos
+                setTimeout(() => {
+                    if(mensaje.classList.contains('bg-green-100')) {
+                        ocultarMensaje();
+                    }
+                }, 4000);
+            });
+        });
+
+        function mostrarMensaje(texto, tipo) {
+            mensaje.textContent = texto;
+            mensaje.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+            if (tipo === 'error') {
+                mensaje.classList.add('bg-red-100', 'text-red-700');
+            } else {
+                mensaje.classList.add('bg-green-100', 'text-green-700');
+            }
+        }
+
+        function ocultarMensaje() {
+            mensaje.classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
